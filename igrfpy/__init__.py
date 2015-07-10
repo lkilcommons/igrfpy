@@ -62,11 +62,6 @@ def getmainfield(times,lats,lons,alts,geocentric=True,altisradius=False):
 # c     to even) included as these are the coefficients published in Excel 
 # c     spreadsheet July 2005.
 
-	if isinstance(times,np.ndarray):
-		times = times.flatten()
-	lats = lats.flatten()
-	lons = lons.flatten()
-	alts = alts.flatten()
 	
 	itype = 2 if geocentric else 1
 	
@@ -74,10 +69,10 @@ def getmainfield(times,lats,lons,alts,geocentric=True,altisradius=False):
 	print "Running IGRF for %d values" % (len(lats))
 	for k in range(len(lats)):
 		colat = 90.-lats[k]
-		elon = lons[k] if lons[k] > 0. else 360. + lons[k]
-		alt = alt[k] if not geocentric or altisradius else alt[k] + 6371.2 #Add earth radius if using geocentric
+		elong = lons[k] if lons[k] > 0. else 360. + lons[k]
+		alt = alts[k] if not geocentric or altisradius else alts[k] + 6371.2 #Add earth radius if using geocentric
 		yr = times[k].year+times[k].month/12.
-		be,bn,bu,f = igrf.igrf11syn(0,yr,itype,alt,colat,elong,x,y,z,f)
+		be,bn,bu,f = igrf11syn(0,yr,itype,alt,colat,elong)
 		BE.append(be)
 		BN.append(bn)
 		BU.append(bu)

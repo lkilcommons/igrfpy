@@ -1,8 +1,0 @@
-setup.py
-igrfpy/igrf11.f90
-igrfpy/igrfmodule.c
-igrfpy.egg-info/PKG-INFO
-igrfpy.egg-info/SOURCES.txt
-igrfpy.egg-info/dependency_links.txt
-igrfpy.egg-info/not-zip-safe
-igrfpy.egg-info/top_level.txt

@@ -72,7 +72,7 @@ def getmainfield(times,lats,lons,alts,geocentric=True,altisradius=False):
 		elong = lons[k] if lons[k] > 0. else 360. + lons[k]
 		alt = alts[k] if not geocentric or altisradius else alts[k] + 6371.2 #Add earth radius if using geocentric
 		yr = times[k].year+times[k].month/12.
-		be,bn,bu,f = igrf11syn(0,yr,itype,alt,colat,elong)
+		bn,be,bu,f = igrf11syn(0,yr,itype,alt,colat,elong)
 		BE.append(be)
 		BN.append(bn)
 		BU.append(bu)

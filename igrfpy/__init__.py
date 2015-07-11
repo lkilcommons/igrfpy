@@ -61,20 +61,44 @@ def getmainfield(times,lats,lons,alts,geocentric=True,altisradius=False):
 # c     Coefficients at 1995.0 incorrectly rounded (rounded up instead of
 # c     to even) included as these are the coefficients published in Excel 
 # c     spreadsheet July 2005.
-
+	
 	
 	itype = 2 if geocentric else 1
+	if geocentric and not altisradius: 
+		alts = alts + 6371.2 #Add earth radius if using geocentric
+
+	if not isinstance(times,list):
+		times = [times] # Deal with possibility of single time
+
+	if not isinstance(alts,list):
+		alts = [alts] # Deal with possibility of single altitude/radius
+
+	if not isinstance(lons,list):
+		lons = [lons] # Deal with possibility of single longitude
 	
+	if not isinstance(lats,list):
+		lats = [lats] # Deal with possibility of single latitude
+		
+
+	niters = max([len(alts),len(times),len(lats),len(lons)]) 
+	# Deterimine which input has the largest number of values
+	# Inputs which run out of values just keep repeating last value until
+	# the number of interations runs out
+
 	BE,BN,BU = [],[],[] 
 	print "Running IGRF for %d values" % (len(lats))
-	for k in range(len(lats)):
-		colat = 90.-lats[k]
-		elong = lons[k] if lons[k] > 0. else 360. + lons[k]
-		alt = alts[k] if not geocentric or altisradius else alts[k] + 6371.2 #Add earth radius if using geocentric
-		yr = times[k].year+times[k].month/12.
-		bn,be,bu,f = igrf11syn(0,yr,itype,alt,colat,elong)
+	for k in range(niters):
+		colat = 90.-lats[k] if k < len(lats) else 90.-lats[-1]
+		lon = lons[k] if k < len(lons) else lons[-1]
+		elong = lon if lon > 0. else 360. + lon
+		alt = alts[k] if k < len(times) else alts[-1]
+		time = times[k] if k < len(times) else times[-1]
+		#Use closest epoch to month of data, probably sufficient precision
+		#Initial 0 means use main field not secular variation
+		bn,be,bd,f = igrf11syn(0,time.year+time.month/12.,  
+								itype,alt,colat,elong) # NED coordinates to ENU for return
 		BE.append(be)
 		BN.append(bn)
-		BU.append(bu)
+		BU.append(-1*bd)
 
 	return BE,BN,BU

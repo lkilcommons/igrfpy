@@ -12,13 +12,14 @@ Basic plotting tools
   * :mod:`models.igrf`: fortran subroutines
 
 """
+import numpy as np
 
 try:
     from igrf import *
 except Exception, e:
     print __file__+' -> igrf: ', e
 
-def getmainfield(times,lats,lons,alts,geocentric=True,altisradius=False):
+def getmainfield(times,lats,lons,alts,geocentric=True,altisradius=False,silent=False):
 	"""Takes lists of times, latitudes, longitudes and altitudes, and returns east north and up components of main fields"""
 	# Call fortran subroutine
 
@@ -68,16 +69,29 @@ def getmainfield(times,lats,lons,alts,geocentric=True,altisradius=False):
 		alts = alts + 6371.2 #Add earth radius if using geocentric
 
 	if not isinstance(times,list):
-		times = [times] # Deal with possibility of single time
+		if isinstance(times,np.ndarray):
+			times = times.flatten().tolist()
+		else:
+			times = [times] # Deal with possibility of single time
+
 
 	if not isinstance(alts,list):
-		alts = [alts] # Deal with possibility of single altitude/radius
+		if isinstance(alts,np.ndarray):
+			alts = alts.flatten().tolist()
+		else:
+			alts = [alts] # Deal with possibility of single altitude/radius
 
 	if not isinstance(lons,list):
-		lons = [lons] # Deal with possibility of single longitude
+		if isinstance(lons,np.ndarray):
+			lons = lons.flatten().tolist()
+		else:
+			lons = [lons] # Deal with possibility of single longitude
 	
 	if not isinstance(lats,list):
-		lats = [lats] # Deal with possibility of single latitude
+		if isinstance(lats,np.ndarray):
+			lats = lats.flatten().tolist()
+		else:
+			lats = [lats] # Deal with possibility of single latitude
 		
 
 	niters = max([len(alts),len(times),len(lats),len(lons)]) 
@@ -86,7 +100,8 @@ def getmainfield(times,lats,lons,alts,geocentric=True,altisradius=False):
 	# the number of interations runs out
 
 	BE,BN,BU = [],[],[] 
-	print "Running IGRF for %d values" % (len(lats))
+	if not silent:
+		print "Running IGRF for %d values" % (len(lats))
 	for k in range(niters):
 		colat = 90.-lats[k] if k < len(lats) else 90.-lats[-1]
 		lon = lons[k] if k < len(lons) else lons[-1]

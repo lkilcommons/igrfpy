@@ -17,9 +17,67 @@ import datetime
 import igrf11
 import igrf12
 
-def getmainfield(times,lats,lons,alts,geocentric=True,altisradius=False,silent=False,igrf11=False):
-	"""Takes lists of times, latitudes, longitudes and altitudes;
-	returns east north and up components of main field
+def invartolist(invar,expected_scalar_type):
+	"""Parse an input variable from a list, single value, or numpy
+	array into a flat list"""
+	if not isinstance(invar,list):
+		if isinstance(invar,np.ndarray):
+			if len(invar.shape) > 1 and all([dim > 1 for dim in invar.shape]):
+				raise ValueError(('2D numpy arrays that are not column'
+								 +' or row vectors are not allowed as inputs'))
+			listvar = invar.flatten().tolist()
+		elif isinstance(invar,expected_scalar_type):
+			listvar = [invar] # Deal with possibility of single altitude/radius
+		else:
+			raise ValueError('Unable to convert input'
+							 'variable {} to a list'.format(invar))
+	else:
+		listvar = invar
+
+	return listvar
+
+
+def getmainfield(intimes,inlats,inlons,inalts,geocentric=True,altisradius=False,silent=False,igrf11=False):
+	"""Takes times, latitudes, longitudes and altitudes and returns
+	east north and up components of main field.
+
+	Allows time and location inputs as single values, lists, or numpy arrays.
+
+
+	PARAMETERS
+	----------
+
+		intimes - datetime.datetime, list, or np.ndarray
+			Datetime for desired magnetic field value
+		inlats - float, list, or np.ndarray
+			Latitude in degrees
+		inlons - float, list or np.ndarray
+			Longitude in degrees
+		inalts - float, list or np.ndarray
+			Altitude in km
+		geocentric - bool, optional
+			If True (default) input latitudes are assumed to be geocentric,
+			if False, they will be treated as geodetic
+		altisradius - bool, optional
+			If False (default) altitude is assumed to be height above
+			earth's surface in kilometers.
+			If True, altitude is taken as distance from the earth's center,
+			in kilometers
+		silent - bool, optional
+			Default is False. If True, no messages will be printed
+		igrf11 - bool, optional
+			If False (default), IGRF12 is used, if True, IGRF11 is used
+
+	RETURNS
+	-------
+
+		BE - list
+			Eastward magnetic field in nT
+		BN - list
+			Northward magnetic field in nT
+		BU - list
+			Upward magnetic field in nT
+
 
 	Explaination of IGRF inputs/output from original fortran source
 
@@ -66,41 +124,11 @@ def getmainfield(times,lats,lons,alts,geocentric=True,altisradius=False,silent=F
 
 	itype = 2 if geocentric else 1
 
-	if not isinstance(times,list):
-		if isinstance(times,np.ndarray):
-			times = times.flatten().tolist()
-		elif isinstance(times,datetime.datetime):
-			times = [times] # Deal with possibility of single time
-		else:
-			raise ValueError('Unable to convert times'
-							 'variable {} to a list'.format(times))
-
-	if not isinstance(alts,list):
-		if isinstance(alts,np.ndarray):
-			alts = alts.flatten().tolist()
-		elif isinstance(alts,float):
-			alts = [alts] # Deal with possibility of single altitude/radius
-		else:
-			raise ValueError('Unable to convert altitudes'
-							 'variable {} to a list'.format(alts))
-
-	if not isinstance(lons,list):
-		if isinstance(lons,np.ndarray):
-			lons = lons.flatten().tolist()
-		elif isinstance(lons,float):
-			lons = [lons] # Deal with possibility of single longitude
-		else:
-			raise ValueError('Unable to convert longitudes'
-							 'variable {} to a list'.format(lons))
-
-	if not isinstance(lats,list):
-		if isinstance(lats,np.ndarray):
-			lats = lats.flatten().tolist()
-		elif isinstance(lats,float):
-			lats = [lats] # Deal with possibility of single latitude
-		else:
-			raise ValueError('Unable to convert latitudes'
-							 'variable {} to a list'.format(lats))
+	#Make inputs into flat lists, regardless of their original type
+	times = invartolist(intimes,datetime.datetime)
+	lats = invartolist(inlats,float)
+	lons = invartolist(inlons,float)
+	alts = invartolist(inalts,float)
 
 	#Standarize altitude to height if it was input as radius
 	if altisradius:
@@ -136,7 +164,7 @@ def getmainfield(times,lats,lons,alts,geocentric=True,altisradius=False,silent=F
 		colat = 90.-lats[k] if k < len(lats) else 90.-lats[-1]
 		lon = lons[k] if k < len(lons) else lons[-1]
 		elong = lon if lon > 0. else 360. + lon
-		alt = alts[k] if k < len(times) else alts[-1]
+		alt = alts[k] if k < len(alts) else alts[-1]
 		time = times[k] if k < len(times) else times[-1]
 		#Use closest epoch to month of data, probably sufficient precision
 		#Initial 0 means use main field not secular variation

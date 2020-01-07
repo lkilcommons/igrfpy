@@ -129,7 +129,12 @@ def ex_as_arr(example_value,shape):
         raise ValueError('Invalid inputs')
 
 @pytest.mark.parametrize('t_shape,latlon_shape,alt_shape',
-                         [(None,None,None),(3,3,3),((3,),(3,),(3,))])
+                         [(None,None,None),# All scalar inputs
+                            (3,3,3), # All list inputs
+                            ((3,),(3,),(3,)), # All 1D array inputs
+                            ((3,1),(3,1),(3,1)), # All 2D array inputs
+                            (3,None,None)]) #List and scalars
+
 def test_getmainfield_against_ncei(t_shape,latlon_shape,alt_shape):
     dt,lat,lon,alt = ncei_getmainfield_ins()
 

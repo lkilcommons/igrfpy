@@ -8,13 +8,13 @@ from setuptools import setup, Extension
 from setuptools.command import install as _install
 from numpy.distutils.core import setup, Extension
 
-
 # Fortran extensions
-igrf = Extension("igrf",sources=["igrfpy/igrf11.f90",'igrfpy/igrf11.pyf'])
+igrf11 = Extension("igrf11",sources=["igrfpy/igrf11.f"],extra_f77_compile_args=["-w"])
+igrf12 = Extension("igrf12",sources=["igrfpy/igrf12.f"],extra_f77_compile_args=["-w"])
 
 setup(name='igrfpy',
-      version = "0.1",
-      description = "International Geomagnetic Reference Field 11 Wrapper",
+      version = "0.2",
+      description = "International Geomagnetic Reference Field 11&12 Wrapper",
       #author = "VT SuperDARN Lab and friends",
       #author_email = "ajribeiro86@gmail.com",
       author = "CU SEDA Group",
@@ -22,10 +22,10 @@ setup(name='igrfpy',
       url = "",
       download_url = "https://github.com/lkilcommons/igrfpy",
       packages=['igrfpy'],
-      package_dir={'igrfpy' : 'igrfpy'}, 
+      package_dir={'igrfpy' : 'igrfpy'},
       long_description = "",
       zip_safe = False,
-      ext_modules = [igrf],
+      ext_modules = [igrf11,igrf12],
       install_requires=[],
       classifiers = [
             "Development Status :: 4 - Beta",

@@ -159,7 +159,7 @@ def getmainfield(intimes,inlats,inlons,inalts,geocentric=True,altisradius=False,
 
 	BE,BN,BU = [],[],[]
 	if not silent:
-		print "Running IGRF for %d values" % (len(lats))
+		print("Running IGRF for %d values" % (len(lats)))
 	for k in range(niters):
 		colat = 90.-lats[k] if k < len(lats) else 90.-lats[-1]
 		lon = lons[k] if k < len(lons) else lons[-1]
@@ -176,7 +176,7 @@ def getmainfield(intimes,inlats,inlons,inalts,geocentric=True,altisradius=False,
 			bn,be,bd,f = igrf11.igrf11syn(0,t_years,
 											itype,alt,colat,elong)
 		else:
-			print(t_years,alt,colat,elong)
+			#print(t_years,alt,colat,elong)
 			bn,be,bd,f = igrf12.igrf12syn(0,t_years,
 											itype,alt,colat,elong)
 
